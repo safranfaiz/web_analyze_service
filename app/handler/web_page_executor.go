@@ -47,6 +47,7 @@ func WebPageExecutorHandler(c *gin.Context) {
 	analyze.AnalyzeHtmlVersion(wc, res)
 	analyze.AnalyzeHtmlTitle(wc, res)
 	analyze.AnalyzeHtmlLoginForm(wc, res)
+	analyze.AnalyzeHtmlHeading(wc, res)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": res,
