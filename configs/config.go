@@ -8,19 +8,28 @@ import (
 )
 type AppConfig struct {
 	ServerPort string
+	BasePath string
+	ApiVersion string
 }
 
-func GetAppConfig() AppConfig {
-	log.Println("App configuration executed...")
+var config *AppConfig
+
+func GetConfig() *AppConfig {
+	if config == nil {
+		config = &AppConfig{}
+	}
+	return config
+}
+
+func (a *AppConfig) LoadConfig() {
+	log.Println("Load configuration executed...")
 	viper.SetConfigFile(constant.ENV_FILE_PATH)
 	err := viper.ReadInConfig()
     if err != nil {
         log.Fatal("Error while reading .env file ", err)
     }
-	appconfig := AppConfig {
-		ServerPort: viper.GetString(constant.PORT),
-	}
-	log.Println("Server Port : ",appconfig.ServerPort)
-	return appconfig
+	a.ServerPort = viper.GetString(constant.PORT)
+	a.BasePath = viper.GetString(constant.BASE_PATH)
+	a.ApiVersion = viper.GetString(constant.API_VERSION)
 }
 
