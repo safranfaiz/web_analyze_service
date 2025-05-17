@@ -20,7 +20,7 @@ func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) {
 		log.Printf("Title analyzer succesfully completed in %v", time.Since(start))
 	}(startTime)
 
-	reader, err := charset.NewReader(strings.NewReader(wc.Content), "")
+	reader, err := charset.NewReader(strings.NewReader(wc.Content), constant.EMPTY)
 	if err != nil {
 		log.Println("Failed to decode HTML:", err)
 		return
