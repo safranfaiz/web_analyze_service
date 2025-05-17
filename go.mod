@@ -3,12 +3,13 @@ module api
 go 1.24.3
 
 require (
+	github.com/antchfx/htmlquery v1.3.4
 	github.com/gin-gonic/gin v1.10.0
 	github.com/spf13/viper v1.20.1
+	golang.org/x/net v0.40.0
 )
 
 require (
-	github.com/antchfx/htmlquery v1.3.4 // indirect
 	github.com/antchfx/xpath v1.3.3 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect

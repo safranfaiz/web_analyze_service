@@ -11,8 +11,8 @@ type SuccessResponse struct {
 }
 
 type Heading struct {
-	Tag  string   `json:"tag"`
-	Text []string `json:"text"`
+	Tag  string `json:"tag"`
+	Text string `json:"text"`
 }
 
 type Url struct {

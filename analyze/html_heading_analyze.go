@@ -2,6 +2,7 @@ package analyze
 
 import (
 	"api/response"
+	"io"
 	"log"
 	"regexp"
 	"strings"
@@ -20,63 +21,67 @@ func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) 
 		log.Printf("Login form analyzer succesfully completed in %v", time.Since(start))
 	}(startTime)
 
-	metaData := html.NewTokenizer(strings.NewReader(wc.Content))
-
-	for {
-		tagType := metaData.Next()
-		switch tagType {
-		case html.StartTagToken:
-			token := metaData.Token()
-			if isHeadingTag(token.Data) {
-				textContent := extractTextContent(metaData)
-				log.Println("Tag: ",token.Data, " Level: ",textContent)
-				// set the heading tag and that content to response
-				
-			}
-		case html.ErrorToken:
-			err := metaData.Err()
-			if err != nil {
-				log.Fatalf("HTML tokenizer error: %v", err)
-			}
-			return
-		}
-	}
-}
-
-// isHeadingTag function encapsulates the logic for checking if a tag name matches the heading tag regex
-func isHeadingTag(tagName string) bool {
 	regex, err := regexp.Compile(headingHTMLTagRegex)
 	if err != nil {
-		log.Println("failed to compile heading regex: " + err.Error())
+		log.Fatal("Error occurred in compiling regex", err)
+		return
 	}
-	return regex.MatchString(tagName)
-}
+	metaData := html.NewTokenizer(strings.NewReader(wc.Content))
 
-// extractTextContent function uses a depth counter.
-// when a StartTagToken is encountered inside a heading tag, the depth is incremented.
-// When an EndTagToken is encountered, the depth is decremented.
-// The loop breaks when the depth becomes less than 0, indicating that the 
-// closing tag of the initial heading tag has been reached.
-func extractTextContent(tokenizer *html.Tokenizer) string {
-	var textContent strings.Builder
-	depth := 0
-
+OuterLoop:
 	for {
-		tokenType := tokenizer.Next()
-		switch tokenType {
-		case html.TextToken:
-			if depth == 0 {
-				textContent.WriteString(tokenizer.Token().Data)
-			}
+		switch metaData.Next() {
 		case html.StartTagToken:
-			depth++
-		case html.EndTagToken:
-			depth--
-			if depth < 0 {
-				return strings.TrimSpace(textContent.String())
+			token, match := ExactRegexPatternAndToken(metaData, regex)
+			if match {
+				// scan next token and return
+				metaData.Next()
+				tempToken := metaData.Token()
+				if tempToken.Type == html.TextToken {
+					SetHeadingDataToResponse(tempToken, res, token)
+				} else {
+					// handle deeper nested or multiline text content
+					for {
+						switch metaData.Next() {
+						case html.TextToken:
+							SetHeadingDataToResponse(tempToken, res, token)
+							// break out of the outer loop
+							break OuterLoop
+						case html.ErrorToken:
+							err := metaData.Err()
+							// EOF mean no more input is available
+							if err == io.EOF {
+								break OuterLoop
+							}
+							log.Printf("HTML tokenizer error: %v", err)
+							// break out of the outer loop
+							break OuterLoop
+						}
+					}
+				}
 			}
+
 		case html.ErrorToken:
-			return strings.TrimSpace(textContent.String())
+			err := metaData.Err()
+			if err == io.EOF {
+				break OuterLoop
+			}
+			log.Printf("HTML tokenizer error: %v", err)
+			break OuterLoop
 		}
 	}
+}
+
+func SetHeadingDataToResponse(tempToken html.Token, res *response.SuccessResponse, token html.Token) {
+	res.Headings = append(res.Headings, response.Heading{
+		Tag:  token.Data,
+		Text: tempToken.Data,
+	})
+}
+
+// ExactRegexPatternAndToken is responsible for pattern and token exact
+func ExactRegexPatternAndToken(metaData *html.Tokenizer, regex *regexp.Regexp) (html.Token, bool) {
+	token := metaData.Token()
+	match := regex.Match([]byte(token.Data))
+	return token, match
 }
