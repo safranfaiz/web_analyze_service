@@ -1,6 +1,6 @@
 package constant
 
-//env constants
+// env constants
 const (
 	PORT          = "PORT"
 	ENV_FILE_PATH = "../.env"
@@ -8,7 +8,7 @@ const (
 	API_VERSION   = "API_VERSION"
 )
 
-//program const
+// program const
 const (
 	TAG_TITLE                      = "title"
 	FORM_TAG_EXP                   = "//form"
