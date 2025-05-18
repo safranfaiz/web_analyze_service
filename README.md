@@ -63,4 +63,4 @@ Fronten application runs on angular for that need below dependecy for running on
 [Frontend Web Application Client](https://github.com/safranfaiz/web-page-anapyze-ui.git) - Clone this Application and run as below instruction
 - Clone the application and go to the **web-page-anapyze-ui** root folder
 - open the cmd and execute the command for build **npm install**
-- use **ng server** command for start the server and it's running the **http://localhost:4200/**
+- use **ng serve** command for start the server and it's running the **http://localhost:4200/**
