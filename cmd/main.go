@@ -6,10 +6,10 @@ import (
 )
 
 func main() {
-    
-    // load the configuration for application
-    configs.GetConfig().LoadConfig()
 
-    // start the server
-    app.ApiRoutes(configs.GetConfig().ServerPort) 
+	// load the configuration for application
+	configs.GetConfig().LoadConfig()
+
+	// start the server
+	app.ApiRoutes(configs.GetConfig().ServerPort)
 }
