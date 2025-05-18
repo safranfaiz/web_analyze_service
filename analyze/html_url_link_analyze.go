@@ -17,7 +17,7 @@ type LinkAnalyzeData struct {
 	Links []string
 }
 
-func AnalyzeHtmlUrlAndLink(wc *response.WebContent, res *response.SuccessResponse) {
+func AnalyzeHtmlUrlAndLink(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing Html URL and Link function is executed...")
 	startTime := time.Now()
 
@@ -28,7 +28,11 @@ func AnalyzeHtmlUrlAndLink(wc *response.WebContent, res *response.SuccessRespons
 	doc, err := html.Parse(strings.NewReader(wc.Content))
 	if err != nil {
 		log.Println("Failed to decode HTML while analyze URL and Link:", err)
-		return
+		return &response.ErrorResponse{
+			Message:  "Failed to decode HTML while analyze URL and Link",
+			ErrorMsg: err.Error(),
+			Code:     http.StatusBadRequest,
+		}
 	}
 
 	// Create LinkAnalyzeData to collect links
@@ -38,6 +42,7 @@ func AnalyzeHtmlUrlAndLink(wc *response.WebContent, res *response.SuccessRespons
 	ExtractURL(doc, res.BasePath, &data)
 	log.Printf("Total %d links in web content", len(data.Links))
 	CheckLinkIsAccessible(&data, res)
+	return nil
 }
 
 // extractURL extracts URLs from the HTML document.

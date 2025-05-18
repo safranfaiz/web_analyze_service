@@ -4,6 +4,7 @@ import (
 	"api/constant"
 	"api/response"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // AnalyzeHtmlTitle is responsible for set the response to HTML Title tag text of given URL
-func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) {
+func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing HTML title function is executed...")
 	startTime := time.Now()
 
@@ -23,7 +24,11 @@ func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) {
 	reader, err := charset.NewReader(strings.NewReader(wc.Content), constant.EMPTY)
 	if err != nil {
 		log.Println("Failed to decode HTML:", err)
-		return
+		return &response.ErrorResponse{
+			Message:  "Failed to decode HTML while Analyze Html Title",
+			ErrorMsg: err.Error(),
+			Code:     http.StatusBadRequest,
+		}
 	}
 	metaData := html.NewTokenizer(reader)
 
@@ -31,14 +36,17 @@ func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) {
 		token := metaData.Next()
 		switch token {
 		case html.ErrorToken:
-			log.Fatalf("HTML content having error and title analyzer stop in %d ms", time.Since(startTime))
-			return
+			log.Printf("HTML content having error and title analyzer stop in %d ms", time.Since(startTime))
+			return &response.ErrorResponse{
+				Message: "HTML content having error while Analyze Html Title",
+				Code:    http.StatusBadRequest,
+			}
 		case html.StartTagToken:
 			t := metaData.Token()
 			if t.Data == constant.TAG_TITLE {
 				if metaData.Next() == html.TextToken {
 					res.Title = metaData.Token().Data
-					return
+					return nil
 				}
 			}
 		}

@@ -4,6 +4,7 @@ import (
 	"api/constant"
 	"api/response"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 )
 
 // AnalyzeHtmlLoginForm is responsible for set the response to HTML content has login form
-func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse) {
+func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing Login form function is executed...")
 	startTime := time.Now()
 
@@ -21,8 +22,12 @@ func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse
 
 	nodes, err := htmlquery.Parse(strings.NewReader(wc.Content))
 	if err != nil {
-		log.Fatalf("Parser error while analyze login form and time taken for %v", time.Since(startTime))
-		return
+		log.Printf("Parser error while analyze login form and time taken for %v", time.Since(startTime))
+		return &response.ErrorResponse{
+			Message:  "Parser error while analyze login form",
+			ErrorMsg: err.Error(),
+			Code:     http.StatusBadRequest,
+		}
 	}
 	forms := htmlquery.Find(nodes, constant.FORM_TAG_EXP)
 	for _, form := range forms {
@@ -46,10 +51,11 @@ func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse
 			hasSubmit = true
 		}
 
-		// login form need user name field, password and submit 
+		// login form need user name field, password and submit
 		// based on this condition we identiy login form is exist
 		if hasUsername && hasPassword && hasSubmit {
 			res.HasLogin = true
 		}
 	}
+	return nil
 }

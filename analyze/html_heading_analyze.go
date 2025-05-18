@@ -4,6 +4,7 @@ import (
 	"api/response"
 	"io"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 const headingHTMLTagRegex = `h[1-6]`
 
-func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) {
+func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing Login form function is executed...")
 	startTime := time.Now()
 
@@ -24,7 +25,11 @@ func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) 
 	regex, err := regexp.Compile(headingHTMLTagRegex)
 	if err != nil {
 		log.Fatal("Error occurred in compiling regex", err)
-		return
+		return &response.ErrorResponse{
+			Message:  "Error occurred in compiling regex",
+			ErrorMsg: err.Error(),
+			Code:     http.StatusBadRequest,
+		}
 	}
 	metaData := html.NewTokenizer(strings.NewReader(wc.Content))
 
@@ -70,6 +75,7 @@ OuterLoop:
 			break OuterLoop
 		}
 	}
+	return nil
 }
 
 func SetHeadingDataToResponse(tempToken html.Token, res *response.SuccessResponse, token html.Token) {

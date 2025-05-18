@@ -22,4 +22,5 @@ const (
 	INTERNAL                       = "INTERNAL"
 	EXTERNAL                       = "EXTERNAL"
 	URL                            = "url"
+	RESPONSE                       = "response"
 )

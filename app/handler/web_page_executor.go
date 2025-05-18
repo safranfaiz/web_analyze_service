@@ -18,34 +18,42 @@ func WebPageExecutorHandler(c *gin.Context) {
 	startTime := time.Now()
 	link := c.Query(constant.URL)
 	log.Println("executed web page url :", link)
+
+	res := &response.SuccessResponse{
+		ExecutedUrl: link,
+	}
+	parsedURL, _ := url.Parse(link)
+	baseUrl := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+	res.BasePath = baseUrl
+
 	if link == constant.EMPTY {
-		c.IndentedJSON(http.StatusBadRequest, response.ErrorResponseMsg("URL is not exist", nil))
+		log.Println("No URL is exist")
+		c.JSON(http.StatusBadRequest, gin.H{
+			constant.RESPONSE: response.ErrorResponseMsg("URL is not exist", nil, http.StatusBadRequest),
+		})
 		return
 	}
 
 	resp, err := http.Get(link)
 	if err != nil {
-		log.Fatal("Error occurred while call web page url", err)
-		c.IndentedJSON(http.StatusBadRequest, response.ErrorResponseMsg("Error occurred while call web page url", err))
+		log.Println("Error occurred while call web page url", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			constant.RESPONSE: response.ErrorResponseMsg("Error occurred while call web page url", err.Error(), http.StatusBadRequest),
+		})
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal("Error occurred while reading response body", err)
-		c.IndentedJSON(http.StatusBadRequest, response.ErrorResponseMsg("Error occurred while reading body", err))
+		log.Println("Error occurred while reading response body", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			constant.RESPONSE: response.ErrorResponseMsg("Error occurred while reading body", err.Error(), http.StatusBadRequest),
+		})
 		return
 	}
 
-	parsedURL, _ := url.Parse(link)
-	baseUrl := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-
 	resTime := time.Since(startTime).Milliseconds()
-	res := &response.SuccessResponse{
-		WebPageExtractTime: resTime,
-		ExecutedUrl:        link,
-		BasePath:           baseUrl,
-	}
+	res.WebPageExtractTime = resTime
 	log.Printf("Web page analysis success with time: %d ms", resTime)
 
 	wc := &response.WebContent{
@@ -61,6 +69,6 @@ func WebPageExecutorHandler(c *gin.Context) {
 	appExecuteTotalTime := time.Since(startTime).Milliseconds()
 	res.AppExecuteTotalTime = appExecuteTotalTime
 	c.JSON(http.StatusOK, gin.H{
-		"response": res,
+		constant.RESPONSE: res,
 	})
 }
