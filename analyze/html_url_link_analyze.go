@@ -131,12 +131,14 @@ func CheckLinkIsAccessible(data *LinkAnalyzeData, res *response.SuccessResponse)
 
 			// check the link accessability
 			startTime := time.Now()
-			response, _ := http.Get(link)
-			if response.StatusCode == 200 {
-				urls.Accessible = true
+			response, err := http.Get(link)
+			if err == nil {
+				if response.StatusCode == 200 {
+					urls.Accessible = true
+				}
+				urls.Status = response.StatusCode
+				urls.UrlExecutionTime = time.Since(startTime).Milliseconds()
 			}
-			urls.Status = response.StatusCode
-			urls.UrlExecutionTime = time.Since(startTime).Milliseconds()
 
 			// return date to add to the channel
 			urlChan <- urls

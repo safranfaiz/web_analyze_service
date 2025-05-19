@@ -1,6 +1,6 @@
 #! /bin/bash
 
-artifact=web-page-analyzer-service
+artifact=$1
 coverfile=coverage.out
 consolefile=console.log
 
@@ -24,7 +24,7 @@ else
 fi
 
 # Remove the existing generated console.log file if exists
-echo "Removing existing $coverfile file if exists..."
+echo "Removing existing $consolefile file if exists..."
 if [ -f "$consolefile" ]; then
   rm -f "$consolefile"
   echo "$consolefile removed"
@@ -39,7 +39,6 @@ echo "Unit test cases execution done."
 
 # Build golang application
 echo "Build the application..."
-cd cmd
 
 # Checking the already created artifact is exist the remove...
 if [ -f "$artifact" ]; then
