@@ -56,7 +56,7 @@ This contains endpoints;
 - `GET` `/api/v1/analyze?url=<URL>` - Analysis for given URL which should be passed as a query param.
 
 # Special Note
-Fronten application runs on angular for that need below dependecy for running on your local
+Frontend application runs on angular for that need below dependecy for running on your local
 - Node verion `22.12.0`
 - NPM version `10.9.0`
 
@@ -64,3 +64,4 @@ Fronten application runs on angular for that need below dependecy for running on
 - Clone the application and go to the **web-page-anapyze-ui** root folder
 - open the cmd and execute the command for build **npm install**
 - use **ng serve** command for start the server and it's running the **http://localhost:4200/**
+- If you got any error while starting the angular application then set the **set NODE_OPTIONS=--openssl-legacy-provider** command to your terminal and run the **ng serve** 
