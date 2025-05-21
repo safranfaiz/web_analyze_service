@@ -13,7 +13,19 @@ import (
 func ApiRoutes(port string) {
 	routes := gin.Default()
 
-	// CORS config
+	api := CorsConfig(routes)
+	{
+		api.GET("/analyze", handler.WebPageExecutorHandler)
+	}
+
+	err := routes.Run(port)
+	if err != nil {
+		log.Fatal("Failed to start the server", err)
+	}
+}
+
+// CORS config
+func CorsConfig(routes *gin.Engine) *gin.RouterGroup {
 	routes.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:4200"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -23,12 +35,5 @@ func ApiRoutes(port string) {
 	}))
 
 	api := routes.Group(configs.GetConfig().BasePath + configs.GetConfig().ApiVersion)
-	{
-		api.GET("/analyze", handler.WebPageExecutorHandler)
-	}
-
-	err := routes.Run(port)
-	if err != nil {
-		log.Fatal("Failed to start the server", err)
-	}
+	return api
 }

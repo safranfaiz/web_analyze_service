@@ -33,6 +33,10 @@ func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) 
 	}
 	metaData := html.NewTokenizer(strings.NewReader(wc.Content))
 
+	return ValidateHeaderTokenHandler(metaData, regex, res)
+}
+
+func ValidateHeaderTokenHandler(metaData *html.Tokenizer, regex *regexp.Regexp, res *response.SuccessResponse) *response.ErrorResponse {
 OuterLoop:
 	for {
 		switch metaData.Next() {

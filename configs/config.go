@@ -3,14 +3,18 @@ package configs
 import (
 	"api/constant"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 type AppConfig struct {
-	ServerPort string
-	BasePath   string
-	ApiVersion string
+	ServerPort  string
+	BasePath    string
+	ApiVersion  string
+	TimeoutInMs time.Duration
+	Client      *http.Client
 }
 
 var config *AppConfig
@@ -32,4 +36,8 @@ func (a *AppConfig) LoadConfig() {
 	a.ServerPort = viper.GetString(constant.PORT)
 	a.BasePath = viper.GetString(constant.BASE_PATH)
 	a.ApiVersion = viper.GetString(constant.API_VERSION)
+	a.TimeoutInMs = viper.GetDuration(constant.TIMEOUT_IN_MS)
+	a.Client = &http.Client{
+		Timeout: a.TimeoutInMs * time.Second,
+	}
 }

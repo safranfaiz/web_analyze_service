@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/antchfx/htmlquery"
+	"golang.org/x/net/html"
 )
 
 // AnalyzeHtmlLoginForm is responsible for set the response to HTML content has login form
@@ -30,6 +31,11 @@ func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse
 		}
 	}
 	forms := htmlquery.Find(nodes, constant.FORM_TAG_EXP)
+	ValidateLoginFormHandler(forms, res)
+	return nil
+}
+
+func ValidateLoginFormHandler(forms []*html.Node, res *response.SuccessResponse) {
 	for _, form := range forms {
 		var hasUsername, hasPassword, hasSubmit bool
 
@@ -57,5 +63,4 @@ func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse
 			res.HasLogin = true
 		}
 	}
-	return nil
 }

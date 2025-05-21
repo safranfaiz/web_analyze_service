@@ -1,9 +1,11 @@
 package analyze
 
 import (
+	"api/configs"
 	"api/constant"
 	"api/response"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -131,14 +133,17 @@ func CheckLinkIsAccessible(data *LinkAnalyzeData, res *response.SuccessResponse)
 
 			// check the link accessability
 			startTime := time.Now()
-			response, err := http.Get(link)
+			response, err := configs.GetConfig().Client.Get(link)
 			if err == nil {
 				if response.StatusCode == 200 {
 					urls.Accessible = true
 				}
 				urls.Status = response.StatusCode
-				urls.UrlExecutionTime = time.Since(startTime).Milliseconds()
+			} else if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+				log.Println("Timeout detected using net.Error.Timeout()")
+				urls.Status = 408
 			}
+			urls.UrlExecutionTime = time.Since(startTime).Milliseconds()
 
 			// return date to add to the channel
 			urlChan <- urls
