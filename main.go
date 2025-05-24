@@ -3,13 +3,15 @@ package main
 import (
 	"api/app"
 	"api/configs"
+	"log"
 )
 
 func main() {
 
-	// load the configuration for application
-	configs.GetConfig().LoadConfig()
+	// Load application configuration
+	cfg := configs.GetConfig()
+	log.Println("Starting API server on port", cfg.ServerPort)
 
-	// start the server
-	app.ApiRoutes(configs.GetConfig().ServerPort)
+	// Start the server
+	app.ApiRoutes(cfg.ServerPort)
 }

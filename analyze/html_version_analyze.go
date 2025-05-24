@@ -32,7 +32,7 @@ func AnalyzeHtmlVersion(wc *response.WebContent, res *response.SuccessResponse) 
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("Analyzing HTML version function completed. Time taken : %v ms", time.Since(start).Milliseconds())
+		log.Printf("Analyzing HTML version function completed. Time taken : %d Microseconds", time.Since(startTime).Microseconds())
 	}(startTime)
 
 	htmlContent := strings.ToLower(wc.Content)

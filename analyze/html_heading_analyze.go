@@ -15,11 +15,11 @@ import (
 const headingHTMLTagRegex = `h[1-6]`
 
 func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
-	log.Println("Analyzing Login form function is executed...")
+	log.Println("Analyzing HTML Headings function is executed...")
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("Login form analyzer succesfully completed in %v", time.Since(start))
+		log.Printf("AnalyzeHtmlHeading execution completed...")
 	}(startTime)
 
 	regex, err := regexp.Compile(headingHTMLTagRegex)
@@ -33,10 +33,10 @@ func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) 
 	}
 	metaData := html.NewTokenizer(strings.NewReader(wc.Content))
 
-	return ValidateHeaderTokenHandler(metaData, regex, res)
+	return ValidateHeaderTokenHandler(metaData, regex, res, startTime)
 }
 
-func ValidateHeaderTokenHandler(metaData *html.Tokenizer, regex *regexp.Regexp, res *response.SuccessResponse) *response.ErrorResponse {
+func ValidateHeaderTokenHandler(metaData *html.Tokenizer, regex *regexp.Regexp, res *response.SuccessResponse, startTime time.Time) *response.ErrorResponse {
 OuterLoop:
 	for {
 		switch metaData.Next() {
@@ -79,6 +79,7 @@ OuterLoop:
 			break OuterLoop
 		}
 	}
+	log.Printf("Analyzing HTML Headings succesfully completed in %d ms", time.Since(startTime).Milliseconds())
 	return nil
 }
 

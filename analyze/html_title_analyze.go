@@ -18,7 +18,7 @@ func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) *r
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("Title analyzer succesfully completed in %v", time.Since(start))
+		log.Printf("Title analyzer succesfully completed in %d ms", time.Since(start).Microseconds())
 	}(startTime)
 
 	reader, err := charset.NewReader(strings.NewReader(wc.Content), constant.EMPTY)

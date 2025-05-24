@@ -2,8 +2,10 @@ package test
 
 import (
 	"api/app/handler"
+	"api/constant"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +28,8 @@ func TestWebPageExecutorHandlerUrlIsEmpty(t *testing.T) {
 }
 
 func TestWebPageExecutorHandler(t *testing.T) {
+	// Set environment variable BEFORE anything else
+	os.Setenv(constant.TEST_ENV, "true")
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 
@@ -34,4 +38,5 @@ func TestWebPageExecutorHandler(t *testing.T) {
 
 	handler.WebPageExecutorHandler(c)
 	assert.Equal(t, http.StatusOK, w.Code)
+	os.Unsetenv(constant.TEST_ENV)
 }

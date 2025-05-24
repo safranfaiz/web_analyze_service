@@ -4,6 +4,7 @@ package constant
 const (
 	PORT          = "PORT"
 	ENV_FILE_PATH = "./.env"
+	ENV_TEST_PATH = "./test.env"
 	BASE_PATH     = "BASE_PATH"
 	API_VERSION   = "API_VERSION"
 	TIMEOUT_IN_MS = "TIME_OUT_HTTP_MS"
@@ -24,4 +25,5 @@ const (
 	EXTERNAL                       = "EXTERNAL"
 	URL                            = "url"
 	RESPONSE                       = "response"
+	TEST_ENV                       = "TEST_ENV"
 )

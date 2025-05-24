@@ -19,138 +19,130 @@ type LinkAnalyzeData struct {
 	Links []string
 }
 
+// AnalyzeHtmlUrlAndLink parses HTML, extracts all URLs, and checks their accessibility.
 func AnalyzeHtmlUrlAndLink(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
-	log.Println("Analyzing Html URL and Link function is executed...")
+	log.Println("🔍 Starting analysis of HTML URLs and links...")
 	startTime := time.Now()
+	//defer log.Println("✅ Completed URL and Link analysis")
 
-	defer func(start time.Time) {
-		log.Printf("URL and Link analyzer succesfully completed in %v", time.Since(start))
-	}(startTime)
-
+	// Parse HTML content
 	doc, err := html.Parse(strings.NewReader(wc.Content))
 	if err != nil {
-		log.Println("Failed to decode HTML while analyze URL and Link:", err)
+		log.Println("❌ Failed to parse HTML content:", err)
 		return &response.ErrorResponse{
-			Message:  "Failed to decode HTML while analyze URL and Link",
+			Message:  "Failed to decode HTML while analyzing URLs",
 			ErrorMsg: err.Error(),
 			Code:     http.StatusBadRequest,
 		}
 	}
 
-	// Create LinkAnalyzeData to collect links
+	// Extract links
 	var data LinkAnalyzeData
+	extractLinks(doc, res.BasePath, &data)
+	log.Printf("📎 Found %d links", len(data.Links))
 
-	// Extract URLs into data.Links
-	ExtractURL(doc, res.BasePath, &data)
-	log.Printf("Total %d links in web content", len(data.Links))
-	CheckLinkIsAccessible(&data, res)
+	// Check accessibility
+	checkLinkAccessibility(data.Links, res)
+	log.Printf("✅ Completed URL and Link analysis in %d ms", time.Since(startTime).Milliseconds())
 	return nil
 }
 
-// extractURL extracts URLs from the HTML document.
-func ExtractURL(n *html.Node, base string, data *LinkAnalyzeData) {
+// extractLinks recursively traverses the DOM tree and collects href/src links.
+func extractLinks(n *html.Node, base string, data *LinkAnalyzeData) {
 	if n.Type == html.ElementNode {
-		for _, a := range n.Attr {
-			if a.Key == constant.H_REF || a.Key == constant.SRC {
-				// Resolve relative URLs.
-				absUrl := UrlResolver(a.Val, base)
-				// Only add if not empty after resolving
-				if absUrl != constant.EMPTY {
-					// collecting links
-					data.Links = append(data.Links, absUrl)
+		for _, attr := range n.Attr {
+			if attr.Key == constant.H_REF || attr.Key == constant.SRC {
+				if absURL := resolveURL(attr.Val, base); absURL != constant.EMPTY {
+					data.Links = append(data.Links, absURL)
 				}
 			}
 		}
 	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		ExtractURL(c, base, data)
+	for child := n.FirstChild; child != nil; child = child.NextSibling {
+		extractLinks(child, base, data)
 	}
 }
 
-// UrlResolver resolves a URL relative to a base URL.
-func UrlResolver(urlStr, base string) string {
-	// check url first character is #
-	if strings.HasPrefix(urlStr, constant.HASH_CODE) {
+// resolveURL resolves relative URLs against the base and filters anchors or invalid URLs.
+func resolveURL(rawURL, base string) string {
+	if strings.HasPrefix(rawURL, constant.HASH_CODE) {
 		return constant.EMPTY
 	}
 
-	// chec url parser has error
-	urlPaserCheck, err := url.Parse(urlStr)
+	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
 		return constant.EMPTY
 	}
 
-	// check url schema is not empty
-	if urlPaserCheck.IsAbs() {
-		return urlStr
+	if parsedURL.IsAbs() {
+		return parsedURL.String()
 	}
 
-	baseUrl, err := url.Parse(base)
+	baseURL, err := url.Parse(base)
 	if err != nil {
-		// invalid base URL
 		return constant.EMPTY
 	}
 
-	// check provided url is relative or absolute
-	resolved, err := baseUrl.Parse(urlStr)
-	if err != nil {
-		// invalid relative URL
-		return constant.EMPTY
-	}
-	return resolved.String()
+	resolvedURL := baseURL.ResolveReference(parsedURL)
+	return resolvedURL.String()
 }
 
-func CheckLinkIsAccessible(data *LinkAnalyzeData, res *response.SuccessResponse) {
-	log.Println("CheckLinkIsAccessible function is executed...")
+// checkLinkAccessibility checks which links are accessible and classifies them as internal/external.
+func checkLinkAccessibility(links []string, res *response.SuccessResponse) {
+	log.Println("🌐 Checking link accessibility...")
 
-	// make channel to collect urls
 	urlChan := make(chan response.Url)
+	var wg sync.WaitGroup
 
-	// collector of goroutine
+	// Collector goroutine
 	go func() {
 		for urlData := range urlChan {
 			res.Urls = append(res.Urls, urlData)
 		}
 	}()
 
-	var wg sync.WaitGroup
+	client := configs.GetConfig().Client
 
-	for _, link := range data.Links {
-		link := link
+	for _, link := range links {
 		wg.Add(1)
-		go func() {
+		go func(link string) {
 			defer wg.Done()
-			urls := response.Url{
-				Url: link,
-			}
-
-			// check link type
-			if strings.Contains(link, res.BasePath) {
-				urls.Type = constant.INTERNAL
-			} else {
-				urls.Type = constant.EXTERNAL
-			}
-
-			// check the link accessability
-			startTime := time.Now()
-			response, err := configs.GetConfig().Client.Get(link)
-			if err == nil {
-				if response.StatusCode == 200 {
-					urls.Accessible = true
-				}
-				urls.Status = response.StatusCode
-			} else if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-				log.Println("Timeout detected using net.Error.Timeout()")
-				urls.Status = 408
-			}
-			urls.UrlExecutionTime = time.Since(startTime).Milliseconds()
-
-			// return date to add to the channel
-			urlChan <- urls
-		}()
+			checkSingleURL(link, res.BasePath, client, urlChan)
+		}(link)
 	}
 
-	// wait until all channel complete
 	wg.Wait()
 	close(urlChan)
+}
+
+// checkSingleURL checks the accessibility of a single URL and sends the result through a channel.
+func checkSingleURL(link, basePath string, client *http.Client, urlChan chan<- response.Url) {
+	result := response.Url{
+		Url:  link,
+		Type: classifyLinkType(link, basePath),
+	}
+
+	start := time.Now()
+	resp, err := client.Get(link)
+	result.UrlExecutionTime = time.Since(start).Milliseconds()
+
+	if err == nil {
+		result.Status = resp.StatusCode
+		result.Accessible = resp.StatusCode == http.StatusOK
+	} else if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+		log.Printf("⏰ Timeout accessing: %s", link)
+		result.Status = http.StatusRequestTimeout
+	} else {
+		log.Printf("⚠️ Failed accessing: %s | Error: %v", link, err)
+	}
+
+	urlChan <- result
+}
+
+// classifyLinkType determines whether the link is internal or external.
+func classifyLinkType(link, base string) string {
+	if strings.Contains(link, base) {
+		return constant.INTERNAL
+	}
+	return constant.EXTERNAL
 }

@@ -35,6 +35,7 @@ fi
 # Running unit test cases and write result to console.log file...
 echo "Running unit test cases and write result to $consolefile file..."
 go test ./... -v -cover -coverpkg=./... -coverprofile=./$coverfile ./... > $consolefile
+go tool cover -html=coverage.out
 echo "Unit test cases execution done."
 
 # Build golang application
