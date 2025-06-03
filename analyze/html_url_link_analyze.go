@@ -31,7 +31,6 @@ func NewHtmlUrlLinkAnalyzer() *HtmlUrlLinkAnalyzer {
 func (a *HtmlUrlLinkAnalyzer) Analyze(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("🔍 Starting analysis of HTML URLs and links...")
 	startTime := time.Now()
-	//defer log.Println("✅ Completed URL and Link analysis")
 
 	// Parse HTML content
 	doc, err := html.Parse(strings.NewReader(wc.Content))
