@@ -19,8 +19,16 @@ type LinkAnalyzeData struct {
 	Links []string
 }
 
-// AnalyzeHtmlUrlAndLink parses HTML, extracts all URLs, and checks their accessibility.
-func AnalyzeHtmlUrlAndLink(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
+// HtmlUrlLinkAnalyzer implements the Analyzer interface for HTML URLs and links.
+type HtmlUrlLinkAnalyzer struct{}
+
+// NewHtmlUrlLinkAnalyzer creates a new HtmlUrlLinkAnalyzer.
+func NewHtmlUrlLinkAnalyzer() *HtmlUrlLinkAnalyzer {
+	return &HtmlUrlLinkAnalyzer{}
+}
+
+// Analyze parses HTML, extracts all URLs, and checks their accessibility.
+func (a *HtmlUrlLinkAnalyzer) Analyze(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("🔍 Starting analysis of HTML URLs and links...")
 	startTime := time.Now()
 	//defer log.Println("✅ Completed URL and Link analysis")

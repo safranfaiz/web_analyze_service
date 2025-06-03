@@ -43,12 +43,25 @@ func WebPageExecutorHandler(c *gin.Context) {
 		Content: string(body),
 	}
 
-	// execute analyzers for collecting meta data of web page
-	analyze.AnalyzeHtmlVersion(wc, res)
-	analyze.AnalyzeHtmlTitle(wc, res)
-	analyze.AnalyzeHtmlLoginForm(wc, res)
-	analyze.AnalyzeHtmlHeading(wc, res)
-	analyze.AnalyzeHtmlUrlAndLink(wc, res)
+	// Create a list of analyzers
+	analyzers := []analyze.Analyzer{
+		analyze.NewHtmlVersionAnalyzer(),
+		analyze.NewHtmlTitleAnalyzer(),
+		analyze.NewHtmlLoginFormAnalyzer(),
+		analyze.NewHtmlHeadingAnalyzer(),
+		analyze.NewHtmlUrlLinkAnalyzer(),
+	}
+
+	// Execute analyzers for collecting meta data of web page
+	for _, analyzerInstance := range analyzers {
+		if analysisErr := analyzerInstance.Analyze(wc, res); analysisErr != nil {
+			log.Printf("Error during analysis with %T: %s. Error details: %s", analyzerInstance, analysisErr.Message, analysisErr.ErrorMsg)
+			c.JSON(analysisErr.Code, gin.H{
+				constant.RESPONSE: analysisErr,
+			})
+			return // Stop processing and return the error
+		}
+	}
 
 	appExecuteTotalTime := time.Since(startTime).Milliseconds()
 	res.AppExecuteTotalTime = appExecuteTotalTime
