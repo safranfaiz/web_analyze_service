@@ -22,17 +22,17 @@ func WebPageExecutorHandler(c *gin.Context) {
 	link := c.Query(constant.URL)
 	log.Println("executed web page url :", link)
 
-	res, notValid := ValidateWebUrl(link, c) // Assuming ValidateWebUrl is now exported
+	res, notValid := ValidateWebUrl(link, c)
 	if notValid {
 		return
 	}
 
-	resp, webUrlError := CallWebUrl(link, c) // Assuming CallWebUrl is now exported
+	resp, webUrlError := CallWebUrl(link, c)
 	if webUrlError {
 		return
 	}
 
-	body, err := HandleResponseBodyRead(resp, c) // Use exported name
+	body, err := HandleResponseBodyRead(resp, c)
 	if err {
 		return
 	}
@@ -71,7 +71,7 @@ func WebPageExecutorHandler(c *gin.Context) {
 			default:
 				if analysisErr := analyzer.Analyze(wc, res); analysisErr != nil {
 					log.Printf("Error during analysis with %T: %s. Error details: %s", analyzer, analysisErr.Message, analysisErr.ErrorMsg)
-					// Try to send error to channel, but don't block if full
+					// Try to send error to channel
 					select {
 					case errChan <- analysisErr:
 						cancel() // Signal other goroutines to stop
@@ -99,9 +99,9 @@ func WebPageExecutorHandler(c *gin.Context) {
 		})
 		return
 	}
+
 	// If we reach here, all analyzers completed successfully or were cancelled
 	// but no error was sent to errChan before it was closed by wg.Wait().
-
 	appExecuteTotalTime := time.Since(startTime).Milliseconds()
 	res.AppExecuteTotalTime = appExecuteTotalTime
 	c.JSON(http.StatusOK, gin.H{
