@@ -7,12 +7,14 @@ import (
 	"time"
 )
 
-type htmlVersionAnalyzer struct {
+// HtmlVersionAnalyzer implements the Analyzer interface for HTML versions.
+type HtmlVersionAnalyzer struct {
 	types map[string]string
 }
 
-func HtmlVersions() htmlVersionAnalyzer {
-	return htmlVersionAnalyzer{
+// NewHtmlVersionAnalyzer creates a new HtmlVersionAnalyzer.
+func NewHtmlVersionAnalyzer() *HtmlVersionAnalyzer {
+	return &HtmlVersionAnalyzer{
 		types: map[string]string{
 			"HTML 5":                 `<!DOCTYPE html>`,
 			"HTML 4.01 Strict":       `"-//W3C//DTD HTML 4.01//EN"`,
@@ -26,20 +28,21 @@ func HtmlVersions() htmlVersionAnalyzer {
 	}
 }
 
-// AnalyzeHtmlVersion is responsible for set the response to HTML verion of given URL
-func AnalyzeHtmlVersion(wc *response.WebContent, res *response.SuccessResponse) {
+// Analyze performs HTML version analysis on the web content.
+func (a *HtmlVersionAnalyzer) Analyze(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing HTML version function is started...")
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("Analyzing HTML version function completed. Time taken : %d Microseconds", time.Since(startTime).Microseconds())
+		log.Printf("HtmlVersionAnalyzer.Analyze completed. Time taken : %d Microseconds", time.Since(startTime).Microseconds())
 	}(startTime)
 
 	htmlContent := strings.ToLower(wc.Content)
-	for key, val := range HtmlVersions().types {
+	for key, val := range a.types {
 		if strings.Contains(htmlContent, strings.ToLower(val)) {
 			res.HtmlVersion = key
 			break
 		}
 	}
+	return nil
 }

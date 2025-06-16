@@ -14,12 +14,21 @@ import (
 
 const headingHTMLTagRegex = `h[1-6]`
 
-func AnalyzeHtmlHeading(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
+// HtmlHeadingAnalyzer implements the Analyzer interface for HTML headings.
+type HtmlHeadingAnalyzer struct{}
+
+// NewHtmlHeadingAnalyzer creates a new HtmlHeadingAnalyzer.
+func NewHtmlHeadingAnalyzer() *HtmlHeadingAnalyzer {
+	return &HtmlHeadingAnalyzer{}
+}
+
+// Analyze performs heading analysis on the web content.
+func (a *HtmlHeadingAnalyzer) Analyze(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing HTML Headings function is executed...")
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("AnalyzeHtmlHeading execution completed...")
+		log.Printf("HtmlHeadingAnalyzer.Analyze execution completed...")
 	}(startTime)
 
 	regex, err := regexp.Compile(headingHTMLTagRegex)

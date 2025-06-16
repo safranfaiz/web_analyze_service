@@ -12,13 +12,21 @@ import (
 	"golang.org/x/net/html"
 )
 
-// AnalyzeHtmlLoginForm is responsible for set the response to HTML content has login form
-func AnalyzeHtmlLoginForm(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
+// HtmlLoginFormAnalyzer implements the Analyzer interface for HTML login forms.
+type HtmlLoginFormAnalyzer struct{}
+
+// NewHtmlLoginFormAnalyzer creates a new HtmlLoginFormAnalyzer.
+func NewHtmlLoginFormAnalyzer() *HtmlLoginFormAnalyzer {
+	return &HtmlLoginFormAnalyzer{}
+}
+
+// Analyze performs login form analysis on the web content.
+func (a *HtmlLoginFormAnalyzer) Analyze(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing Login form function is executed...")
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("Login form analyzer succesfully completed in %v", time.Since(start))
+		log.Printf("HtmlLoginFormAnalyzer.Analyze succesfully completed in %v", time.Since(start))
 	}(startTime)
 
 	nodes, err := htmlquery.Parse(strings.NewReader(wc.Content))

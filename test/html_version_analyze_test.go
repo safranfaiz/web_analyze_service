@@ -14,6 +14,7 @@ func TestAnalyzeHtmlVersion(t *testing.T) {
 		Content: htmlContent,
 	}
 	res := response.SuccessResponse{}
-	analyze.AnalyzeHtmlVersion(&wc, &res)
+	analyzer := analyze.NewHtmlVersionAnalyzer()
+	analyzer.Analyze(&wc, &res)
 	assert.Equal(t, "HTML 5", res.HtmlVersion, "Web Page Version Testing...")
 }

@@ -14,7 +14,8 @@ func TestAnalyzeHtmlTitleSuccess(t *testing.T) {
 		Content: htmlContent,
 	}
 	res := response.SuccessResponse{}
-	analyze.AnalyzeHtmlTitle(&wc, &res)
+	analyzer := analyze.NewHtmlTitleAnalyzer()
+	analyzer.Analyze(&wc, &res)
 	assert.Equal(t, "Test Web Page Analyzer", res.Title, "Web Page Title Testing...")
 }
 
@@ -24,7 +25,8 @@ func TestAnalyzeHtmlTitlFailInReader(t *testing.T) {
 		Content: htmlContent,
 	}
 	res := response.SuccessResponse{}
-	err := analyze.AnalyzeHtmlTitle(&wc, &res)
+	analyzer := analyze.NewHtmlTitleAnalyzer()
+	err := analyzer.Analyze(&wc, &res)
 	assert.Equal(t, "Failed to decode HTML while Analyze Html Title", err.Message, "Web Page Title Testing...")
 }
 
@@ -34,6 +36,7 @@ func TestAnalyzeHtmlTitlFailInErrorToken(t *testing.T) {
 		Content: htmlContent,
 	}
 	res := response.SuccessResponse{}
-	err := analyze.AnalyzeHtmlTitle(&wc, &res)
+	analyzer := analyze.NewHtmlTitleAnalyzer()
+	err := analyzer.Analyze(&wc, &res)
 	assert.Equal(t, "HTML content having error while Analyze Html Title", err.Message, "Web Page Title Testing...")
 }

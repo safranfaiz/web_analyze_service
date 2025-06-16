@@ -12,13 +12,21 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-// AnalyzeHtmlTitle is responsible for set the response to HTML Title tag text of given URL
-func AnalyzeHtmlTitle(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
+// HtmlTitleAnalyzer implements the Analyzer interface for HTML titles.
+type HtmlTitleAnalyzer struct{}
+
+// NewHtmlTitleAnalyzer creates a new HtmlTitleAnalyzer.
+func NewHtmlTitleAnalyzer() *HtmlTitleAnalyzer {
+	return &HtmlTitleAnalyzer{}
+}
+
+// Analyze performs title analysis on the web content.
+func (a *HtmlTitleAnalyzer) Analyze(wc *response.WebContent, res *response.SuccessResponse) *response.ErrorResponse {
 	log.Println("Analyzing HTML title function is executed...")
 	startTime := time.Now()
 
 	defer func(start time.Time) {
-		log.Printf("Title analyzer succesfully completed in %d ms", time.Since(start).Microseconds())
+		log.Printf("HtmlTitleAnalyzer.Analyze succesfully completed in %d ms", time.Since(start).Microseconds())
 	}(startTime)
 
 	reader, err := charset.NewReader(strings.NewReader(wc.Content), constant.EMPTY)

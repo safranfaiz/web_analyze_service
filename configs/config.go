@@ -38,7 +38,7 @@ func loadConfig() *AppConfig {
 	log.Println("Loading configuration...")
 
 	if os.Getenv(constant.TEST_ENV) == "true" {
-		viper.SetConfigFile(constant.ENV_TEST_PATH) // use a test-specific env file
+		viper.SetConfigFile(constant.ENV_TEST_PATH)
 	} else {
 		viper.SetConfigFile(constant.ENV_FILE_PATH)
 	}

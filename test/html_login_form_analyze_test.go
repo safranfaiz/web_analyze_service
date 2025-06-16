@@ -19,6 +19,7 @@ func TestAnalyzeHtmlLoginForm(t *testing.T) {
 		Content: htmlContent,
 	}
 	res := response.SuccessResponse{}
-	analyze.AnalyzeHtmlLoginForm(&wc, &res)
+	analyzer := analyze.NewHtmlLoginFormAnalyzer()
+	analyzer.Analyze(&wc, &res)
 	assert.Equal(t, true, res.HasLogin, "Web Page Login from analyze testing...")
 }
